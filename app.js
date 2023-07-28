@@ -1,5 +1,5 @@
 const express = require('express');
-const bodyParse = require('body-parse');
+const bodyParser = require('body-parser');
 const res = require('express/lib/response');
 const app = express();
 const sqlite = require('sqlite3').verbose();
@@ -9,11 +9,25 @@ const db = new sqlite.Database('./quote.db', sqlite.OPEN_READWRITE, (err) => {
     }
 });
 
+let sql;
+
 app.use(bodyParser.json());
 
 app.post('/quote', (req, res) => {
     try {
-        console.log(req.body.movie);
+        const { movie, quote, character } = req.body;
+        sql = 'INSERT INTO quote(movie, quote, character) VALUES (?, ?, ?)';
+        db.run(sql, [movie, quote, character], (err) => {
+            if (err) {
+                return res.json({
+                    status: 300,
+                    success: false,
+                    error: err,
+                });
+            } else {
+                console.log('Record created successfully... ', movie, quote, character);
+            }
+        });
         return res.json({
             status: 200,
             success: true,
@@ -27,5 +41,4 @@ app.post('/quote', (req, res) => {
     }
 });
 
-app.listen(3000);
-
+app.listen(3000, console.log('Listening on port 3000'));
