@@ -43,8 +43,13 @@ app.post('/quote', (req, res) => {
 });
 
 app.get('/quote', (req, res) => {
-    sql = 'SELECT * FROM quote;';
+    sql = 'SELECT * FROM quote';
     try {
+        const queryObject = url.parse(req.url, true).query;
+        if (queryObject.field && queryObject.type) {
+            sql += ` WHERE ${queryObject.field} LIKE '%${queryObject.type}%'`;
+        }
+        sql += ';';
         db.all(sql, [], (err, rows) => {
             if (err) {
                 return res.json({
